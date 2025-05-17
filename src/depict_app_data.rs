@@ -1,4 +1,5 @@
 use std::{
+    path::PathBuf,
     sync::Arc,
     thread::{self, sleep},
     time::Duration,
@@ -12,10 +13,11 @@ use crate::{DisplayDataSet, FetchedDataSet};
 
 pub struct DepictAppData {
     pub display_data_set: Arc<DisplayDataSet>,
+    pub ressource_path: PathBuf,
 }
 
 impl DepictAppData {
-    pub fn new(fetched_data_set: &FetchedDataSet) -> Self {
+    pub fn new(fetched_data_set: &FetchedDataSet, ressource_path: PathBuf) -> Self {
         let mut display_data_set =
             DisplayDataSet::new(&fetched_data_set.list_all_depiction_category());
 
@@ -28,6 +30,7 @@ impl DepictAppData {
 
         Self {
             display_data_set: Arc::new(display_data_set),
+            ressource_path,
         }
     }
 

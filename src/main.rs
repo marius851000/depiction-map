@@ -1,5 +1,8 @@
+use std::path::PathBuf;
+
+use actix_files::Files;
 use actix_web::{
-    App, Either, HttpResponse, HttpServer, Responder, get,
+    App, Either, HttpServer, get,
     http::StatusCode,
     rt::task::spawn_blocking,
     web::{self, Data, Json},
@@ -9,32 +12,6 @@ use depiction_map::{
     DepictAppData, DepictionCategory, FetchDataOpenStreetMap, FetchedDataSet, MapEntry,
 };
 use log::info;
-use mime_guess::from_path;
-use rust_embed::Embed;
-
-// based on https://git.sr.ht/~pyrossh/rust-embed/tree/master/item/examples/actix.rs (for the static file delivery)
-#[derive(Embed)]
-#[folder = "static"]
-struct Asset;
-
-fn handle_embedded_file(path: &str) -> HttpResponse {
-    match Asset::get(path) {
-        Some(content) => HttpResponse::Ok()
-            .content_type(from_path(path).first_or_octet_stream().as_ref())
-            .body(content.data.into_owned()),
-        None => HttpResponse::NotFound().body("404 Not Found"),
-    }
-}
-
-#[actix_web::get("/")]
-async fn index() -> impl Responder {
-    handle_embedded_file("index.html")
-}
-
-#[actix_web::get("/static/{_:.*}")]
-async fn static_ressources(path: web::Path<String>) -> impl Responder {
-    handle_embedded_file(path.as_str())
-}
 
 #[get("/depiction/{category}.json")]
 async fn get_depiction(
@@ -51,6 +28,7 @@ async fn get_depiction(
 
 #[derive(Parser, Debug)]
 pub struct Opts {
+    ressource_path: PathBuf,
     #[arg(default_value = "8080")]
     port: u16,
     #[arg(default_value = "127.0.0.1")]
@@ -83,7 +61,7 @@ async fn main() {
             "osm_dragon.json".into(),
         );
 
-        let mut app_data = DepictAppData::new(&fetched_data_set);
+        let mut app_data = DepictAppData::new(&fetched_data_set, opts.ressource_path.clone());
         app_data.start_update_thread(fetched_data_set);
         Data::new(app_data)
     }).await.unwrap();
@@ -91,11 +69,12 @@ async fn main() {
     info!("Starting server on {}:{}", opts.host, opts.port);
 
     HttpServer::new(move || {
+        let mut static_path = app_data.ressource_path.clone();
+        static_path.push("static");
         App::new()
             .app_data(app_data.clone())
-            .service(index)
-            .service(static_ressources)
             .service(get_depiction)
+            .service(Files::new("/", static_path).index_file("index.html"))
     })
     .bind((opts.host, opts.port))
     .unwrap()
