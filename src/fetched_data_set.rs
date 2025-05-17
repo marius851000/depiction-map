@@ -7,7 +7,7 @@ use anyhow::Context;
 use log::{info, warn};
 use tai_time::TaiTime;
 
-use crate::{DepictionCategory, FetchData, MapEntry, Storage};
+use crate::{DepictionCategory, FetchData, MapEntry, Overrides, Storage};
 
 pub struct FetchedDataEntry {
     pub storage: Storage,
@@ -53,13 +53,15 @@ impl FetchedDataEntry {
 pub struct FetchedDataSet {
     pub default_storage_dir: PathBuf,
     pub entries: Vec<FetchedDataEntry>,
+    pub overrides: Overrides,
 }
 
 impl FetchedDataSet {
-    pub fn new(default_storage_dir: PathBuf) -> Self {
+    pub fn new(default_storage_dir: PathBuf, overrides: Overrides) -> Self {
         Self {
             default_storage_dir,
             entries: Vec::new(),
+            overrides,
         }
     }
 
@@ -96,7 +98,13 @@ impl FetchedDataSet {
             let should_be_used = source_entry.depict.iter().any(|e| *e == depict_category);
             if should_be_used {
                 for map_entry in source_entry.storage.data.entries.iter() {
-                    result.push(map_entry.clone());
+                    let mut map_entry = map_entry.clone();
+                    for element_id in map_entry.element_ids.clone().iter() {
+                        if let Some(override_entry) = self.overrides.get_override(element_id) {
+                            override_entry.override_map_entry(&mut map_entry);
+                        }
+                    }
+                    result.push(map_entry);
                 }
             }
         }

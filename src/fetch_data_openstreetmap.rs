@@ -4,7 +4,7 @@ use anyhow::bail;
 use log::warn;
 use osm_overpass::api::{NWR, OverpassAPI};
 
-use crate::{FetchData, MapEntry};
+use crate::{ElementId, FetchData, MapEntry};
 
 pub struct FetchDataOpenStreetMap {
     pub query: String,
@@ -53,11 +53,13 @@ impl FetchData for FetchDataOpenStreetMap {
                 };
                 Some(MapEntry {
                     pos: (center.0.into(), center.1.into()),
-                    distant_image: None,
+                    image: None,
+                    image_source_url: None,
                     location_name: None,
                     name: tag.get("name").map(|x| x.to_string()),
                     source_url: Some(format!("https://www.openstreetmap.org/node/{}", osm_id)),
                     is_in_exhibit: false,
+                    element_ids: vec![ElementId::Osm(osm_id)]
                 })
             })
             .collect())

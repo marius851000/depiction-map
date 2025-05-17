@@ -89,22 +89,19 @@ function refresh_map() {
         }
 
         // image
-        //TODO:
-        /*imageURL = null
-        imageCredit = null
-        if (qid in extra_images) {
-            imageURL = "./extra/" + qid + "." + extra_images[qid][0];
-            imageCredit = "image from <a href=\"" + extra_images[qid][1] + "\">here</a>"
-        } else if (entry["image"] != undefined) {
-            imageURL = escapeHtml(entry["image"]["value"]);
-            imageCredit = "image from Wikimedia commons";
-        }
+        imageURL = entry["image"]
+        imageSourceURL = entry["image_source_url"]
+
         if (imageURL != null) {
-            popupHTML += "<img src=\"" + imageURL + "\" class=\"embed-image\"/><br /><p>" + imageCredit + "</p><br />";
+            popupHTML += "<img src=\"" + escapeHtml(imageURL) + "\" class=\"embed-image\"/><br />";
+            if (imageSourceURL != null) {
+                popupHTML += "<p><a href=\"" + escapeHtml(imageSourceURL) + "\">image source</a></p>";
+            } else {
+                popupHTML += "<p>image source somehow unknown .</p>";
+            }
         } else {
             popupHTML += "<p><i>No image</i></p><br />"
-            console.log(entry["itemLabel"]["value"] + " ( https://wikidata.org/wiki/" + qid + " ) have no image")
-        }*/
+        }
 
         // link
         popupHTML += "<a href=\"" + escapeHtml(entry["source_url"]) + "\">Data source</a>"

@@ -1,9 +1,6 @@
 mod map_entry;
 pub use map_entry::MapEntry;
 
-mod image_reference;
-pub use image_reference::ImageReference;
-
 mod storage;
 use serde::{Deserialize, Serialize};
 pub use storage::Storage;
@@ -22,6 +19,15 @@ pub use display_data_set::DisplayDataSet;
 
 mod depict_app_data;
 pub use depict_app_data::DepictAppData;
+
+mod overrides;
+pub use overrides::{OverrideEntry, Overrides};
+
+#[derive(Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
+pub enum ElementId {
+    Osm(u64),
+    Wikidata(u64),
+}
 
 /**
  * What kind of stuff depict this. Allow to group multiple source together.

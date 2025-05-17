@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{fs::File, path::PathBuf};
 
 use actix_files::Files;
 use actix_web::{
@@ -9,7 +9,7 @@ use actix_web::{
 };
 use clap::Parser;
 use depiction_map::{
-    DepictAppData, DepictionCategory, FetchDataOpenStreetMap, FetchedDataSet, MapEntry,
+    DepictAppData, DepictionCategory, FetchDataOpenStreetMap, FetchedDataSet, MapEntry, Overrides,
 };
 use log::info;
 
@@ -42,7 +42,11 @@ async fn main() {
     let opts = Opts::parse();
 
     let app_data = spawn_blocking(move || {
-        let mut fetched_data_set = FetchedDataSet::new("./test".into());
+        let overrides_path = opts.ressource_path.join("overrides.json");
+        let overrides_file = File::open(&overrides_path).unwrap();
+        let overrides: Overrides = serde_json::from_reader(overrides_file).unwrap();
+
+        let mut fetched_data_set = FetchedDataSet::new("./test".into(), overrides); //TODO: configure save path
 
         let osm_dragon_fetcher = FetchDataOpenStreetMap {
             api: FetchDataOpenStreetMap::default_api(),
