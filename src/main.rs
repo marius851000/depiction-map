@@ -55,6 +55,7 @@ async fn get_depiction(
 #[derive(Parser, Debug)]
 pub struct Opts {
     ressource_path: PathBuf,
+    save_path: PathBuf,
     #[arg(default_value = "8080")]
     port: u16,
     #[arg(default_value = "127.0.0.1")]
@@ -72,7 +73,7 @@ async fn main() {
         let overrides_file = File::open(&overrides_path).unwrap();
         let overrides: Overrides = serde_json::from_reader(overrides_file).unwrap();
 
-        let mut fetched_data_set = FetchedDataSet::new("./test".into(), overrides); //TODO: configure save path
+        let mut fetched_data_set = FetchedDataSet::new(opts.save_path.into(), overrides);
 
         let osm_dragon_fetcher = FetchDataOpenStreetMap {
             api: FetchDataOpenStreetMap::default_api(),
