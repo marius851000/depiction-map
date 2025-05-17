@@ -2,7 +2,7 @@ use std::{fs::File, path::PathBuf};
 
 use actix_files::Files;
 use actix_web::{
-    App, Either, HttpServer, get,
+    App, Either, HttpResponse, HttpServer, Responder, get,
     http::StatusCode,
     rt::task::spawn_blocking,
     web::{self, Data, Json},
@@ -12,6 +12,32 @@ use depiction_map::{
     DepictAppData, DepictionCategory, FetchDataOpenStreetMap, FetchedDataSet, MapEntry, Overrides,
 };
 use log::info;
+use mime_guess::from_path;
+use rust_embed::Embed;
+
+// based on https://git.sr.ht/~pyrossh/rust-embed/tree/master/item/examples/actix.rs (for the static file delivery)
+#[derive(Embed)]
+#[folder = "static"]
+struct Asset;
+
+fn handle_embedded_file(path: &str) -> HttpResponse {
+    match Asset::get(path) {
+        Some(content) => HttpResponse::Ok()
+            .content_type(from_path(path).first_or_octet_stream().as_ref())
+            .body(content.data.into_owned()),
+        None => HttpResponse::NotFound().body("404 Not Found"),
+    }
+}
+
+#[actix_web::get("/")]
+async fn index() -> impl Responder {
+    handle_embedded_file("index.html")
+}
+
+#[actix_web::get("/static/{_:.*}")]
+async fn static_ressources(path: web::Path<String>) -> impl Responder {
+    handle_embedded_file(path.as_str())
+}
 
 #[get("/depiction/{category}.json")]
 async fn get_depiction(
@@ -73,12 +99,13 @@ async fn main() {
     info!("Starting server on {}:{}", opts.host, opts.port);
 
     HttpServer::new(move || {
-        let mut static_path = app_data.ressource_path.clone();
-        static_path.push("static");
+        let images_path = app_data.ressource_path.join("images");
         App::new()
             .app_data(app_data.clone())
             .service(get_depiction)
-            .service(Files::new("/", static_path).index_file("index.html"))
+            .service(static_ressources)
+            .service(index)
+            .service(Files::new("/images", images_path).show_files_listing())
     })
     .bind((opts.host, opts.port))
     .unwrap()
