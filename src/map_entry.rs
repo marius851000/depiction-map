@@ -10,4 +10,5 @@ pub struct MapEntry {
     pub location_name: Option<String>,
     pub distant_image: Option<ImageReference>, // Local image will overwrite this
     pub source_url: Option<String>,
+    pub is_in_exhibit: bool,
 }

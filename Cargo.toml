@@ -11,8 +11,10 @@ clap = { version = "4.5.38", features = ["derive"] }
 env_logger = "0.11.8"
 git2 = "0.20.2"
 log = "0.4.27"
+mime_guess = "2.0.5"
 ordered-float = { version = "5.0.0", features = ["serde"] }
 osm_overpass = "0.1.2"
+rust-embed = { version = "8.7.2", features = ["actix"] }
 serde = { version = "1.0.219", features = ["derive"] }
 serde_json = "1.0.140"
 tai-time = { version = "0.3.3", features = ["serde", "tai_clock"] }

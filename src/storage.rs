@@ -1,6 +1,6 @@
 use std::{
     collections::BTreeSet,
-    fs::{create_dir_all, rename, File},
+    fs::{File, create_dir_all, rename},
     path::PathBuf,
 };
 
@@ -40,7 +40,8 @@ impl Storage {
 
     pub fn save(&mut self) -> anyhow::Result<()> {
         if let Some(parent) = self.storage_file.parent() {
-            create_dir_all(parent).with_context(|| format!("Could not create dir at {:?}", parent))?;
+            create_dir_all(parent)
+                .with_context(|| format!("Could not create dir at {:?}", parent))?;
         }
 
         let mut temp_path: PathBuf = self.storage_file.clone();
