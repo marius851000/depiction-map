@@ -1,10 +1,13 @@
 use std::{
     collections::{BTreeSet, HashSet},
     path::PathBuf,
+    sync::{Arc, Mutex},
 };
 
-use anyhow::Context;
+use anyhow::{Context, bail};
+use git2::{ErrorCode, Repository, RepositoryInitOptions, Signature};
 use log::{info, warn};
+use pathdiff::diff_paths;
 use tai_time::TaiTime;
 
 use crate::{DepictionCategory, FetchData, MapEntry, Overrides, Storage};
@@ -43,6 +46,48 @@ impl FetchedDataEntry {
             self.storage
                 .save()
                 .with_context(|| format!("Saving data of {:?}", self.fetcher.title()))?;
+
+            let extra = self.storage.get_extra();
+            let repo = match extra.repo.lock() {
+                Ok(r) => r,
+                Err(err) => bail!("Failed to get repo: {:?}", err), // This error can’t be used by anyhow directly
+            };
+
+            let mut index = repo.index()?;
+            index.clear()?;
+            index.add_path(
+                &diff_paths(self.storage.get_storage_file(), &extra.save_storage_dir)
+                    .context("Could not diff paths for indexing with git")?,
+            )?;
+            index.write()?;
+            let tree_oid = index.write_tree()?;
+
+            let tree = repo.find_tree(tree_oid)?;
+            let head = match repo.head() {
+                Ok(head) => Some(head.peel_to_commit()?),
+                Err(err) => {
+                    if err.code() == ErrorCode::UnbornBranch {
+                        None
+                    } else {
+                        bail!(err);
+                    }
+                }
+            };
+            let mut parents = Vec::new();
+            if let Some(head) = head.as_ref() {
+                parents.push(head);
+            };
+
+            let signature = Signature::now("depict_bot", "nomail@example.org")?;
+            repo.commit(
+                Some("HEAD"),
+                &signature,
+                &signature,
+                &format!("Update {}", self.fetcher.title()),
+                &tree,
+                &parents,
+            )?;
+
             Ok(true)
         } else {
             Ok(false)
@@ -51,18 +96,46 @@ impl FetchedDataEntry {
 }
 
 pub struct FetchedDataSet {
-    pub default_storage_dir: PathBuf,
     pub entries: Vec<FetchedDataEntry>,
+    pub extra: Arc<FetchDataExtra>,
+}
+
+pub struct FetchDataExtra {
+    pub save_storage_dir: PathBuf,
     pub overrides: Overrides,
+    pub repo: Mutex<Repository>,
 }
 
 impl FetchedDataSet {
-    pub fn new(default_storage_dir: PathBuf, overrides: Overrides) -> Self {
-        Self {
-            default_storage_dir,
+    pub fn new(default_storage_dir: PathBuf, overrides: Overrides) -> anyhow::Result<Self> {
+        let repo = match Repository::open(&default_storage_dir) {
+            Ok(repo) => repo,
+            Err(err) => {
+                if err.code() == git2::ErrorCode::NotFound {
+                    info!("Creating new storage repo in {:?}", default_storage_dir);
+                    Repository::init_opts(
+                        &default_storage_dir,
+                        &RepositoryInitOptions::new().no_reinit(true),
+                    )
+                    .with_context(|| {
+                        format!("Creating new storage repo in {:?}", default_storage_dir)
+                    })?
+                } else {
+                    return Err(Into::<anyhow::Error>::into(err)).with_context(|| {
+                        format!("Opening storage repo in {:?}", default_storage_dir)
+                    });
+                }
+            }
+        };
+
+        Ok(Self {
             entries: Vec::new(),
-            overrides,
-        }
+            extra: Arc::new(FetchDataExtra {
+                save_storage_dir: default_storage_dir,
+                overrides,
+                repo: Mutex::new(repo),
+            }),
+        })
     }
 
     pub fn add_fetcher<T: FetchData + Send + 'static>(
@@ -70,14 +143,14 @@ impl FetchedDataSet {
         fetch_data: T,
         depict: Vec<DepictionCategory>,
         storage_file_name: String,
-    ) {
-        let mut storage_path = self.default_storage_dir.clone();
-        storage_path.push(storage_file_name);
-
-        let mut storage = Storage::new(storage_path.clone());
+    ) -> anyhow::Result<()> {
+        let mut storage = Storage::new(storage_file_name.clone(), self.extra.clone())?;
         match storage.load() {
             Ok(_) => (),
-            Err(err) => warn!("Failed to load some data at {:?}: {:#}", storage_path, err),
+            Err(err) => warn!(
+                "Failed to load some storage at {}: {:?}",
+                storage_file_name, err
+            ),
         };
 
         self.entries.push(FetchedDataEntry {
@@ -85,6 +158,8 @@ impl FetchedDataSet {
             fetcher: Box::new(fetch_data),
             depict: depict.into_iter().collect(),
         });
+
+        Ok(())
     }
 
     pub fn build_data_for_depiction_category(
@@ -100,7 +175,8 @@ impl FetchedDataSet {
                 for map_entry in source_entry.storage.data.entries.iter() {
                     let mut map_entry = map_entry.clone();
                     for element_id in map_entry.element_ids.clone().iter() {
-                        if let Some(override_entry) = self.overrides.get_override(element_id) {
+                        if let Some(override_entry) = self.extra.overrides.get_override(element_id)
+                        {
                             override_entry.override_map_entry(&mut map_entry);
                         }
                     }

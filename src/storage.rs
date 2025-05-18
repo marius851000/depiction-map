@@ -2,13 +2,15 @@ use std::{
     collections::BTreeSet,
     fs::{File, create_dir_all, rename},
     path::PathBuf,
+    sync::Arc,
 };
 
 use anyhow::Context;
+use safe_join::SafeJoin;
 use serde::{Deserialize, Serialize};
 use tai_time::TaiTime;
 
-use crate::MapEntry;
+use crate::{MapEntry, fetched_data_set::FetchDataExtra};
 
 #[derive(Default, Serialize, Deserialize, Debug)]
 pub struct StoredData {
@@ -18,15 +20,37 @@ pub struct StoredData {
 
 pub struct Storage {
     pub data: StoredData,
-    pub storage_file: PathBuf,
+    storage_file: PathBuf,
+    extra: Arc<FetchDataExtra>,
 }
 
 impl Storage {
-    pub fn new(storage_file: PathBuf) -> Self {
-        Self {
+    pub fn new(storage_file_name: String, extra: Arc<FetchDataExtra>) -> anyhow::Result<Self> {
+        let storage_file = extra
+            .save_storage_dir
+            .safe_join(&storage_file_name)
+            .with_context(|| {
+                format!(
+                    "Error joining directory {:?} and file name {:?}",
+                    extra.save_storage_dir, storage_file_name
+                )
+            })?;
+        //NOTE: if that was done for security, I would need to make sure it does not override a .git files.
+        //(and most likely just make sure it’s indeed a file name with not path separator)
+
+        Ok(Self {
             data: StoredData::default(),
             storage_file,
-        }
+            extra,
+        })
+    }
+
+    pub fn get_extra(&self) -> &Arc<FetchDataExtra> {
+        &self.extra
+    }
+
+    pub fn get_storage_file(&self) -> &PathBuf {
+        &self.storage_file
     }
 
     pub fn load(&mut self) -> anyhow::Result<()> {

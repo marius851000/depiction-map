@@ -11,6 +11,7 @@ use clap::Parser;
 use depiction_map::{
     DepictAppData, DepictionCategory, FetchDataOpenStreetMap, FetchedDataSet, MapEntry, Overrides,
 };
+use env_logger::Env;
 use log::info;
 use mime_guess::from_path;
 use rust_embed::Embed;
@@ -64,7 +65,7 @@ pub struct Opts {
 
 #[actix_web::main]
 async fn main() {
-    env_logger::init();
+    env_logger::Builder::from_env(Env::default().default_filter_or("info")).init();
 
     let opts = Opts::parse();
 
@@ -73,7 +74,7 @@ async fn main() {
         let overrides_file = File::open(&overrides_path).unwrap();
         let overrides: Overrides = serde_json::from_reader(overrides_file).unwrap();
 
-        let mut fetched_data_set = FetchedDataSet::new(opts.save_path.into(), overrides);
+        let mut fetched_data_set = FetchedDataSet::new(opts.save_path.into(), overrides).unwrap();
 
         let osm_dragon_fetcher = FetchDataOpenStreetMap {
             api: FetchDataOpenStreetMap::default_api(),
@@ -90,7 +91,7 @@ async fn main() {
             osm_dragon_fetcher,
             vec![DepictionCategory::dragon()],
             "osm_dragon.json".into(),
-        );
+        ).unwrap();
 
         let mut app_data = DepictAppData::new(&fetched_data_set, opts.ressource_path.clone());
         app_data.start_update_thread(fetched_data_set);

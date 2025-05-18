@@ -46,7 +46,7 @@ impl DepictAppData {
                         Ok(t) => t,
                         Err(err) => {
                             panic!(
-                                "Something seriously wrong happened getting the current (TAI) time ({:#}). The update thread will be destroyed.",
+                                "Something seriously wrong happened getting the current (TAI) time ({:?}). The update thread will be destroyed.",
                                 err
                             )
                         }
@@ -69,7 +69,7 @@ impl DepictAppData {
                         }
                         Err(err) => {
                             warn!(
-                                "Could not perform update of {:?}: {:#}",
+                                "Could not perform update of {:?}: {:?}",
                                 fetched_data_set.entries[entry_pos].fetcher.title(),
                                 err
                             )
