@@ -88,14 +88,24 @@ function refresh_map() {
 
         popupHTML = "<b>" + escapeHtml(name) + "</b><br />";
 
-        //TODO: determine nature in the server-side code to display it here like in the original
         location_name = entry["location_name"]
-        if (location_name != null) {
-            popupHTML += "<i>" + escapeHtml(location_name) + "</i>";
+        nature_name = entry["nature"]
+        if (location_name != null || nature_name != null) {
+            popupHTML += "<i>";
+            if (nature_name != null) {
+                popupHTML += escapeHtml(nature_name);
+                if (location_name != null) {
+                    popupHTML += " — ";
+                }
+            }
+            if (location_name != null) {
+                popupHTML += escapeHtml(location_name);
+            }
+            popupHTML += "</i><br />"
         }
 
         // image
-        imageURL = entry["image"]
+        imageURL = entry["image"] //TODO: (more server-side) some images are TIF that doesn’t display in browser
         imageSourceURL = entry["image_source_url"]
 
         if (imageURL != null) {
