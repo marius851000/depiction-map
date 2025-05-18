@@ -545,11 +545,13 @@ dependencies = [
  "ordered-float",
  "osm_overpass",
  "pathdiff",
+ "reqwest",
  "rust-embed",
  "safe_join",
  "serde",
  "serde_json",
  "tai-time",
+ "url",
 ]
 
 [[package]]

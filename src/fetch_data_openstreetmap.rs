@@ -12,13 +12,6 @@ pub struct FetchDataOpenStreetMap {
     pub title: String,
 }
 
-/*
-[out:json][timeout:30];
-
-nwr["artwork_subject"~"dragon"]["artwork_subject"!~"dragonfl"]; // but what about both depiction of dragon and dragonfly? Does not appear to exist for now, but that really show that OSM data model is innapropriate for that matter
-
-out geom;*/
-
 impl FetchDataOpenStreetMap {
     pub fn default_api() -> OverpassAPI {
         return OverpassAPI::new("https://overpass-api.de/api/interpreter".to_string());
@@ -52,13 +45,14 @@ impl FetchData for FetchDataOpenStreetMap {
                     }
                 };
                 Some(MapEntry {
-                    pos: (center.0.into(), center.1.into()),
+                    pos: Some((center.0.into(), center.1.into())),
                     image: None,
                     image_source_url: None,
                     location_name: None,
                     name: tag.get("name").map(|x| x.to_string()),
                     source_url: Some(format!("https://www.openstreetmap.org/node/{}", osm_id)),
                     is_in_exhibit: false,
+                    nature: None, //TODO: guess from tags
                     element_ids: vec![ElementId::Osm(osm_id)],
                 })
             })

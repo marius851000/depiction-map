@@ -65,8 +65,14 @@ function refresh_map() {
     existing_layer = markers;
 
     for (entry of Object.entries(saved_answer)) {
+
         entry = entry[1];
-        console.log(entry);
+        //console.log(entry);
+        
+        if (entry["pos"] == null) {
+            continue;
+        }
+
         if (ignore_exhibits && entry["is_in_exhibit"] == true) {
             continue;
         }

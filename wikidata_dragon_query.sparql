@@ -1,0 +1,94 @@
+#defaultView:Table
+SELECT DISTINCT ?item ?itemLabel ?coords ?coordsApproxP1_0 ?coordsApproxP2_0 ?coordsApproxP1_1 ?coordsApproxC1_0_0 ?coordsApproxC1_0_1 ?image ?placeLabel ?nature ?natureLabel ?isInExhibit WHERE {
+  SERVICE wikibase:label {
+    bd:serviceParam wikibase:language "[AUTO_LANGUAGE],en,fr,de".
+    ?item rdfs:label ?itemLabel.
+    ?place rdfs:label ?placeLabel.
+    ?nature rdfs:label ?natureLabel.
+  }
+  {
+    SELECT DISTINCT
+      ?item
+      (MIN(?coords_) AS ?coords)
+      (MIN(?coordsApproxP1_0_) as ?coordsApproxP1_0)
+      (MIN(?coordsApproxP1_1_) as ?coordsApproxP1_1)
+      (MIN(?coordsApproxP2_0_) as ?coordsApproxP2_0)
+      (MIN(?coordsApproxC1_0_0_) as ?coordsApproxC1_0_0)
+      (MIN(?coordsApproxC1_0_1_) as ?coordsApproxC1_0_1)
+      (MIN(?image_) AS ?image)
+      (MIN(?place_) AS ?place)
+      (MIN(?nature_) AS ?nature)
+      (MAX(?isInExhibit_) AS ?isInExhibit)
+    WHERE {
+      {
+        ?item p:P180 ?depict.
+        { ?depict (ps:P180/wdt:P31*/wdt:P279*) wd:Q7559. } # dragon
+        UNION
+        { ?depict (ps:P180/wdt:P31*/wdt:P279*) wd:Q30170627. } # dragon of fiction
+      } UNION {
+        ?item p:P31 ?nature.
+        ?nature (ps:P31/wdt:P279*) wd:Q60985310. # chinese dragon colum
+      }
+      
+      OPTIONAL {
+        ?item wdt:P276 ?place_.
+      }
+      OPTIONAL {
+        ?item wdt:P276 ?placeExhibit.
+        ?placeExhibit (p:P31) ?placeExhibitNature.
+        { ?placeExhibitNature (ps:P31/wdt:P279*) wd:Q1030034. }
+        UNION
+        { ?placeExhibitNature (ps:P31/wdt:P279*) wd:Q180516. }
+        UNION
+        { ?placeExhibitNature (ps:P31/wdt:P279*) wd:Q1370598. } # structure of worship
+        UNION
+        { ?placeExhibitNature (ps:P31/wdt:P279*) wd:Q856584. } # library (building)
+        UNION
+        { ?placeExhibitNature (ps:P31/wdt:P279*) wd:Q31855. } # research institute
+      }
+      BIND(IF(BOUND(?placeExhibit),true,false) AS ?isInExhibit_).
+      
+      OPTIONAL { ?item wdt:P625 ?coords_. }
+      
+      # 1 place
+      OPTIONAL {
+        ?item p:P276 ?statementP1_0.
+        ?statementP1_0 (ps:P276) ?placeP1_0.
+        ?placeP1_0 wdt:P625 ?coordsApproxP1_0_.
+      }
+
+      # 2 place
+      OPTIONAL {
+        ?item p:P276 ?statementP2_0.
+        ?statementP2_0 (ps:P276/wdt:P276) ?placeP2_0.
+        ?placeP2_0 wdt:P625 ?coordsApproxP2_0_.
+      }
+      
+      # 1 place then 1 part of
+      OPTIONAL {
+        ?item p:P276 ?statementP1_1.
+        ?statementP1_1 (ps:P276/wdt:P361) ?placeP1_1.
+        ?placeP1_1 wdt:P625 ?coordsApproxP1_1_.
+      }
+      
+      # 1 collection
+      OPTIONAL {
+        ?item p:P195 ?statementC1_0_0.
+        ?statementC1_0_0 (ps:P195) ?placeC1_0_0.
+        ?placeC1_0_0 wdt:P625 ?coordsApproxC1_0_0_.
+      }
+      
+      # 1 collection, 1 part of
+      OPTIONAL {
+        ?item p:P195 ?statementC1_0_1.
+        ?statementC1_0_1 (ps:P195/wdt:P361) ?placeC1_0_1.
+        ?placeC1_0_1 wdt:P625 ?coordsApproxC1_0_1_.
+      }
+      
+      OPTIONAL { ?item wdt:P31 ?nature_. }
+      OPTIONAL { ?item wdt:P18 ?image_. }
+      
+    } GROUP BY ?item ?placeExhibit
+    LIMIT 10000
+  }
+} ORDER BY ?item

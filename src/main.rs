@@ -9,7 +9,8 @@ use actix_web::{
 };
 use clap::Parser;
 use depiction_map::{
-    DepictAppData, DepictionCategory, FetchDataOpenStreetMap, FetchedDataSet, MapEntry, Overrides,
+    DepictAppData, DepictionCategory, FetchDataOpenStreetMap, FetchDataWikidataSparql,
+    FetchedDataSet, MapEntry, Overrides,
 };
 use env_logger::Env;
 use log::info;
@@ -91,6 +92,13 @@ async fn main() {
             osm_dragon_fetcher,
             vec![DepictionCategory::dragon()],
             "osm_dragon.json".into(),
+        ).unwrap();
+
+        let wikidata_dragon_fetcher = FetchDataWikidataSparql::new(include_str!("../wikidata_dragon_query.sparql").to_string(), "dragon from wikidata".into()).unwrap();
+        fetched_data_set.add_fetcher(
+            wikidata_dragon_fetcher,
+            vec![DepictionCategory::dragon()],
+            "wikidata_dragon.json".into(),
         ).unwrap();
 
         let mut app_data = DepictAppData::new(&fetched_data_set, opts.ressource_path.clone());

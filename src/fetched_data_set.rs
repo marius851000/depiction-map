@@ -53,6 +53,8 @@ impl FetchedDataEntry {
                 Err(err) => bail!("Failed to get repo: {:?}", err), // This error can’t be used by anyhow directly
             };
 
+            //TODO: this also saves the fetch data into git (it shouldn’t)
+
             let mut index = repo.index()?;
             index.clear()?;
             index.add_path(

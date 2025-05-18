@@ -11,6 +11,9 @@ pub use fetch_data::FetchData;
 mod fetch_data_openstreetmap;
 pub use fetch_data_openstreetmap::FetchDataOpenStreetMap;
 
+mod fetch_data_wikidata_sparql;
+pub use fetch_data_wikidata_sparql::FetchDataWikidataSparql;
+
 mod fetched_data_set;
 pub use fetched_data_set::FetchedDataSet;
 
@@ -26,7 +29,7 @@ pub use overrides::{OverrideEntry, Overrides};
 #[derive(Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub enum ElementId {
     Osm(u64),
-    Wikidata(u64),
+    Wikidata(String),
 }
 
 /**
@@ -40,3 +43,5 @@ impl DepictionCategory {
         Self("dragon".into())
     }
 }
+
+pub const USER_AGENT: &'static str = "DepictionMapBot (developed by marius@mariusdavid.fr)";

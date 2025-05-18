@@ -25,13 +25,14 @@ impl OverrideEntry {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Overrides {
     pub osm: HashMap<u64, OverrideEntry>,
+    pub wikidata: HashMap<String, OverrideEntry>
 }
 
 impl Overrides {
     pub fn get_override(&self, element_id: &ElementId) -> Option<&OverrideEntry> {
         match element_id {
             ElementId::Osm(id) => self.osm.get(id),
-            ElementId::Wikidata(_) => todo!(),
+            ElementId::Wikidata(id) => self.wikidata.get(id),
         }
     }
 }
