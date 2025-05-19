@@ -15,6 +15,9 @@
     	<link rel="stylesheet" href="/static/leaflet//MarkerCluster.Default.css" />
 	    <script src="/static/leaflet/leaflet.markercluster-src.js"></script>
 
+        <link rel="stylesheet" href="/static/leaflet/L.Control.Sidebar.css" />
+        <script src="/static/leaflet/L.Control.Sidebar.js"></script>
+
         <style>
             #map {
                 height: 90vh;
@@ -33,7 +36,15 @@
 
         <div id="status">status: JavaScript has not yet started</div>
 
-        <div id="map"></div>
+        <div id="map">
+            <div id="sidebar">
+                <h1>Settings</h1>
+                <div>
+                    <input type="checkbox" id="include_exhibits" name="include_exhibits" onclick="refresh_map_if_needed()" checked>
+                    <label for="include_exhibits">Include Exhibits, place of workships, and the like</label>
+                </div>
+            </div>
+        </div>
 
         <script src="./static/code.js"></script>
     </body>

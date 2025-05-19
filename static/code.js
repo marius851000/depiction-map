@@ -26,12 +26,24 @@ L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
 }).addTo(map);
 
+var sidebar = L.control.sidebar('sidebar', {
+    position: 'right',
+    closeButton: false, //TODO: would be nice to close (and re-open) this
+    autoPan: false,
+});
 
+map.addControl(sidebar);
 
 let xhr = new XMLHttpRequest();
 
 let saved_answer = null;
 let existing_layer = null;
+
+function refresh_map_if_needed() {
+    if (existing_layer != null) {
+        refresh_map();
+    }
+}
 
 xhr.onreadystatechange = function() {
     if (this.readyState == 4) {
@@ -51,12 +63,12 @@ xhr.onreadystatechange = function() {
 
 function refresh_map() {
     console.log("refresh_map called");
+
     if (existing_layer != null) {
         map.removeLayer(existing_layer);
     }
 
-    //const ignore_exhibits = !document.getElementById("include_exhibits").checked;
-    const ignore_exhibits = false; //TODO:
+    const ignore_exhibits = !document.getElementById("include_exhibits").checked;
 
     let markers = L.markerClusterGroup({
         "maxClusterRadius": 30,
@@ -137,3 +149,5 @@ updateStatus("fetching datas");
 xhr.open("GET", "/depiction/dragon.json", true);
 xhr.setRequestHeader("Accept", "application/json");
 xhr.send();
+
+sidebar.show();
