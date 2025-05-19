@@ -75,6 +75,10 @@ impl WikidataElement {
         };
         None
     }
+
+    fn is_direct_location(&self) -> bool {
+        self.coords.as_ref().map(|x| x.value.is_some()).unwrap_or(false)
+    }
 }
 
 #[derive(Deserialize)]
@@ -146,7 +150,7 @@ impl FetchData for FetchDataWikidataSparql {
                     image: element.image.as_ref().map(|x| x.value.clone()).flatten(),
                     image_source_url: None, //TODO:
                     source_url: Some(item_url),
-                    is_in_exhibit: element.isInExhibit.as_ref().map(|x| x.is_true()).unwrap_or(false),
+                    is_in_exhibit: element.isInExhibit.as_ref().map(|x| x.is_true()).unwrap_or(false) || !element.is_direct_location(),
                     nature: element.natureLabel.as_ref().map(|x| x.value.clone()).flatten(),
                     element_ids: vec![ElementId::Wikidata(qid)]
                 }
