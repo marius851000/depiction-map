@@ -69,6 +69,7 @@ function refresh_map() {
     }
 
     const ignore_exhibits = !document.getElementById("include_exhibits").checked;
+    const missing_image_only = document.getElementById("missing_image_only").checked;
 
     let markers = L.markerClusterGroup({
         "maxClusterRadius": 30,
@@ -86,6 +87,10 @@ function refresh_map() {
         }
 
         if (ignore_exhibits && entry["is_in_exhibit"] == true) {
+            continue;
+        }
+
+        if (missing_image_only && entry["image"] != null) {
             continue;
         }
 
