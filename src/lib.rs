@@ -26,6 +26,9 @@ pub use depict_app_data::DepictAppData;
 mod overrides;
 pub use overrides::{OverrideEntry, Overrides};
 
+mod git_util;
+pub use git_util::make_commit;
+
 #[derive(Clone, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord, Debug, Hash)]
 pub enum ElementId {
     Osm(u64),

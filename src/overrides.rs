@@ -25,7 +25,7 @@ impl OverrideEntry {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Overrides {
     pub osm: HashMap<u64, OverrideEntry>,
-    pub wikidata: HashMap<String, OverrideEntry>
+    pub wikidata: HashMap<String, OverrideEntry>,
 }
 
 impl Overrides {

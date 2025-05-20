@@ -1,16 +1,18 @@
 use std::{
     collections::{BTreeSet, HashSet},
+    fs::File,
+    io::Write,
     path::PathBuf,
     sync::{Arc, Mutex},
 };
 
 use anyhow::{Context, bail};
-use git2::{ErrorCode, Repository, RepositoryInitOptions, Signature};
+use git2::{Repository, RepositoryInitOptions};
 use log::{info, warn};
 use pathdiff::diff_paths;
 use tai_time::TaiTime;
 
-use crate::{DepictionCategory, FetchData, MapEntry, Overrides, Storage};
+use crate::{DepictionCategory, FetchData, MapEntry, Overrides, Storage, make_commit};
 
 pub struct FetchedDataEntry {
     pub storage: Storage,
@@ -20,7 +22,7 @@ pub struct FetchedDataEntry {
 
 impl FetchedDataEntry {
     pub fn should_be_updated(&self, current_time: TaiTime<0>) -> bool {
-        if let Some(fetched_time) = &self.storage.data.last_updated {
+        if let Some(fetched_time) = &self.storage.data.private.last_updated {
             // if the clock goes backward for some reason, refetch the data (and so re-set the time)
             if current_time < *fetched_time {
                 return true;
@@ -38,8 +40,8 @@ impl FetchedDataEntry {
     pub fn perform_update_if_needed(&mut self, current_time: TaiTime<0>) -> anyhow::Result<bool> {
         if self.should_be_updated(current_time) {
             info!("Updating {:?}", self.fetcher.title());
-            self.storage.data.last_updated = Some(current_time); // Set first but not save, so it will still wait if an error occur (but will retry when restarted or just later)
-            self.storage.data.entries = self
+            self.storage.data.private.last_updated = Some(current_time); // Set first but not save, so it will still wait if an error occur (but will retry when restarted or just later)
+            self.storage.data.public.entries = self
                 .fetcher
                 .fetch_data()
                 .with_context(|| format!("Fetching data from {:?}", self.fetcher.title()))?;
@@ -53,42 +55,13 @@ impl FetchedDataEntry {
                 Err(err) => bail!("Failed to get repo: {:?}", err), // This error can’t be used by anyhow directly
             };
 
-            //TODO: this also saves the fetch data into git (it shouldn’t)
-
-            let mut index = repo.index()?;
-            index.clear()?;
-            index.add_path(
+            make_commit(
+                &repo,
                 &diff_paths(self.storage.get_storage_file(), &extra.save_storage_dir)
                     .context("Could not diff paths for indexing with git")?,
-            )?;
-            index.write()?;
-            let tree_oid = index.write_tree()?;
-
-            let tree = repo.find_tree(tree_oid)?;
-            let head = match repo.head() {
-                Ok(head) => Some(head.peel_to_commit()?),
-                Err(err) => {
-                    if err.code() == ErrorCode::UnbornBranch {
-                        None
-                    } else {
-                        bail!(err);
-                    }
-                }
-            };
-            let mut parents = Vec::new();
-            if let Some(head) = head.as_ref() {
-                parents.push(head);
-            };
-
-            let signature = Signature::now("depict_bot", "nomail@example.org")?;
-            repo.commit(
-                Some("HEAD"),
-                &signature,
-                &signature,
                 &format!("Update {}", self.fetcher.title()),
-                &tree,
-                &parents,
-            )?;
+            )
+            .context("Commiting changes to git")?;
 
             Ok(true)
         } else {
@@ -129,6 +102,15 @@ impl FetchedDataSet {
                 }
             }
         };
+
+        let gitignore_path = default_storage_dir.join(".gitignore");
+        if !gitignore_path.exists() {
+            let mut f = File::create(&gitignore_path)
+                .with_context(|| format!("Creating .gitignore in {:?}", default_storage_dir))?;
+            writeln!(f, "*.private\n")
+                .with_context(|| format!("Writing .gitignore in {:?}", default_storage_dir))?;
+            make_commit(&repo, &PathBuf::from(".gitignore"), "Add .gitignore")?;
+        }
 
         Ok(Self {
             entries: Vec::new(),
@@ -174,7 +156,7 @@ impl FetchedDataSet {
         for source_entry in &self.entries {
             let should_be_used = source_entry.depict.iter().any(|e| *e == depict_category);
             if should_be_used {
-                for map_entry in source_entry.storage.data.entries.iter() {
+                for map_entry in source_entry.storage.data.public.entries.iter() {
                     let mut map_entry = map_entry.clone();
                     for element_id in map_entry.element_ids.clone().iter() {
                         if let Some(override_entry) = self.extra.overrides.get_override(element_id)
