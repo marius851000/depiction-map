@@ -6,6 +6,16 @@ use osm_overpass::api::{NWR, OverpassAPI};
 
 use crate::{ElementId, FetchData, MapEntry};
 
+fn guess_nature_from_tags(tags: &std::collections::HashMap<String, String>) -> Option<String> {
+    for (k, v) in tags {
+        match (k.as_str(), v.as_str()) {
+            ("artwork_type", v) => return Some(v.to_string()),
+            _ => (),
+        }
+    }
+    None
+}
+
 pub struct FetchDataOpenStreetMap {
     pub query: String,
     pub api: OverpassAPI,
@@ -52,7 +62,7 @@ impl FetchData for FetchDataOpenStreetMap {
                     name: tag.get("name").map(|x| x.to_string()),
                     source_url: Some(format!("https://www.openstreetmap.org/node/{}", osm_id)),
                     is_in_exhibit: false,
-                    nature: None, //TODO: guess from tags
+                    nature: guess_nature_from_tags(&tag),
                     element_ids: vec![ElementId::Osm(osm_id)],
                 })
             })
