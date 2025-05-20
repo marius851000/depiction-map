@@ -6,6 +6,7 @@ use osm_overpass::api::{NWR, OverpassAPI};
 
 use crate::{ElementId, FetchData, MapEntry};
 
+#[allow(clippy::single_match)]
 fn guess_nature_from_tags(tags: &std::collections::HashMap<String, String>) -> Option<String> {
     for (k, v) in tags {
         match (k.as_str(), v.as_str()) {
@@ -24,7 +25,7 @@ pub struct FetchDataOpenStreetMap {
 
 impl FetchDataOpenStreetMap {
     pub fn default_api() -> OverpassAPI {
-        return OverpassAPI::new("https://overpass-api.de/api/interpreter".to_string());
+        OverpassAPI::new("https://overpass-api.de/api/interpreter".to_string())
     }
 }
 impl FetchData for FetchDataOpenStreetMap {

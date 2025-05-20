@@ -51,7 +51,7 @@ async fn get_depiction(
         Some(value) => value,
         None => return Either::Right(("category does not exist", StatusCode::NOT_FOUND)),
     };
-    return Either::Left(web::Json(result.load().as_ref().clone()));
+    Either::Left(web::Json(result.load().as_ref().clone()))
 }
 
 #[derive(Parser, Debug)]
@@ -75,7 +75,7 @@ async fn main() {
         let overrides_file = File::open(&overrides_path).unwrap();
         let overrides: Overrides = serde_json::from_reader(overrides_file).unwrap();
 
-        let mut fetched_data_set = FetchedDataSet::new(opts.save_path.into(), overrides).unwrap();
+        let mut fetched_data_set = FetchedDataSet::new(opts.save_path, overrides).unwrap();
 
         let osm_dragon_fetcher = FetchDataOpenStreetMap {
             api: FetchDataOpenStreetMap::default_api(),
@@ -83,7 +83,7 @@ async fn main() {
 
             nwr[\"artwork_subject\"~\"dragon\"][\"artwork_subject\"!~\"dragonfl\"]; // but what about both depiction of dragon and dragonfly? Does not appear to exist for now, but that really show that OSM data model is innapropriate for that kind of use
             // idea: just get all dragon and then post-process locally
-            
+
             out geom;".to_string(),
             title: "Dragons from OpenStreetMap".to_string(),
         };

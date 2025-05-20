@@ -9,7 +9,7 @@ use url::Url;
 use crate::{ElementId, FetchData, MapEntry, USER_AGENT};
 
 fn parse_point(value: &str) -> Option<(f64, f64)> {
-    let second_part = value.split("Point(").skip(1).next()?;
+    let second_part = value.split("Point(").nth(1)?;
     let isolated_values = second_part.split(")").next()?;
     let mut space_splited = isolated_values.split(" ");
     let first_float = space_splited.next()?;
@@ -70,11 +70,9 @@ impl WikidataElement {
             &self.coordsApproxC1_0_1,
         ];
 
-        for element in orders {
-            if let Some(element) = element {
-                if let Some(coord) = &element.value {
-                    return Some(coord);
-                }
+        for element in orders.into_iter().flatten() {
+            if let Some(coord) = &element.value {
+                return Some(coord);
             }
         }
         None
@@ -100,7 +98,7 @@ struct WikidataDocument {
 
 impl WikidataDocument {
     fn get_elements(&self) -> &Vec<WikidataElement> {
-        return &self.results.bindings;
+        &self.results.bindings
     }
 }
 
@@ -149,11 +147,10 @@ impl FetchData for FetchDataWikidataSparql {
         for element in elements {
             let coord = element
                 .get_coord_value()
-                .map(|x| parse_point(x))
-                .flatten()
+                .and_then(parse_point)
                 .map(|(x, y)| (OrderedFloat::from(x), OrderedFloat::from(y)));
 
-            let item_url = match element.item.as_ref().map(|x| x.value.clone()).flatten() {
+            let item_url = match element.item.as_ref().and_then(|x| x.value.clone()) {
                 Some(value) => value,
                 None => bail!("Item URL missing in an entry (the query likely has an issue)"),
             };
@@ -163,17 +160,9 @@ impl FetchData for FetchDataWikidataSparql {
             };
             results.insert(MapEntry {
                 pos: coord,
-                name: element
-                    .itemLabel
-                    .as_ref()
-                    .map(|x| x.value.clone())
-                    .flatten(),
-                location_name: element
-                    .placeLabel
-                    .as_ref()
-                    .map(|x| x.value.clone())
-                    .flatten(),
-                image: element.image.as_ref().map(|x| x.value.clone()).flatten(),
+                name: element.itemLabel.as_ref().and_then(|x| x.value.clone()),
+                location_name: element.placeLabel.as_ref().and_then(|x| x.value.clone()),
+                image: element.image.as_ref().and_then(|x| x.value.clone()),
                 image_source_url: None, //TODO:
                 source_url: Some(item_url),
                 is_in_exhibit: element
@@ -182,11 +171,7 @@ impl FetchData for FetchDataWikidataSparql {
                     .map(|x| x.is_true())
                     .unwrap_or(false)
                     || !element.is_direct_location(),
-                nature: element
-                    .natureLabel
-                    .as_ref()
-                    .map(|x| x.value.clone())
-                    .flatten(),
+                nature: element.natureLabel.as_ref().and_then(|x| x.value.clone()),
                 element_ids: vec![ElementId::Wikidata(qid)],
             });
         }
@@ -195,10 +180,10 @@ impl FetchData for FetchDataWikidataSparql {
     }
 
     fn retry_every(&self) -> std::time::Duration {
-        return Duration::from_secs(3600 * 3);
+        Duration::from_secs(3600 * 3)
     }
 
     fn title(&self) -> String {
-        return self.title.clone();
+        self.title.clone()
     }
 }

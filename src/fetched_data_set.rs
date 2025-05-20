@@ -90,7 +90,7 @@ impl FetchedDataSet {
                     info!("Creating new storage repo in {:?}", default_storage_dir);
                     Repository::init_opts(
                         &default_storage_dir,
-                        &RepositoryInitOptions::new().no_reinit(true),
+                        RepositoryInitOptions::new().no_reinit(true),
                     )
                     .with_context(|| {
                         format!("Creating new storage repo in {:?}", default_storage_dir)
