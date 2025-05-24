@@ -3,8 +3,6 @@
         <meta charset="UTF-8" />
         <title>Dragon depiction map v2</title>
 
-
-
         <link rel="stylesheet" href="/static/leaflet/leaflet.css" />
         <script src="/static/leaflet/leaflet.js"></script>
 
@@ -12,8 +10,11 @@
         <script src="/static/leaflet/Control.FullScreen.js"></script>
 
         <link rel="stylesheet" href="/static/leaflet//MarkerCluster.css" />
-    	<link rel="stylesheet" href="/static/leaflet//MarkerCluster.Default.css" />
-	    <script src="/static/leaflet/leaflet.markercluster-src.js"></script>
+        <link
+            rel="stylesheet"
+            href="/static/leaflet//MarkerCluster.Default.css"
+        />
+        <script src="/static/leaflet/leaflet.markercluster-src.js"></script>
 
         <link rel="stylesheet" href="/static/leaflet/L.Control.Sidebar.css" />
         <script src="/static/leaflet/L.Control.Sidebar.js"></script>
@@ -22,13 +23,12 @@
             #map {
                 height: 90vh;
             }
-            
+
             .embed-image {
                 max-width: 60vw;
                 max-height: 60vh;
             }
         </style>
-
     </head>
 
     <body>
@@ -41,12 +41,28 @@
                 <h1>Settings</h1>
                 <!-- TODO: reset button -->
                 <div>
-                    <input type="checkbox" id="include_exhibits" name="include_exhibits" onclick="refresh_map_if_needed()" checked>
-                    <label for="include_exhibits">Include Exhibits, place of workships, and the like</label>
+                    <input
+                        type="checkbox"
+                        id="include_exhibits"
+                        name="include_exhibits"
+                        onclick="refresh_map_if_needed()"
+                        checked
+                    />
+                    <label for="include_exhibits"
+                        >Include Exhibits, place of workships, and the
+                        like</label
+                    >
                 </div>
                 <div>
-                    <input type="checkbox" id="missing_image_only" name="missing_image_only" onclick="refresh_map_if_needed()">
-                    <label for="missing_image_only">(contrib) only show place with no images</label>
+                    <input
+                        type="checkbox"
+                        id="missing_image_only"
+                        name="missing_image_only"
+                        onclick="refresh_map_if_needed()"
+                    />
+                    <label for="missing_image_only"
+                        >(contrib) only show place with no images</label
+                    >
                 </div>
             </div>
         </div>
