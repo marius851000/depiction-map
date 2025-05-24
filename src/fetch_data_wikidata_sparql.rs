@@ -163,7 +163,19 @@ impl FetchData for FetchDataWikidataSparql {
                 name: element.itemLabel.as_ref().and_then(|x| x.value.clone()),
                 location_name: element.placeLabel.as_ref().and_then(|x| x.value.clone()),
                 image: element.image.as_ref().and_then(|x| x.value.clone()),
-                image_source_url: None, //TODO:
+                image_source_url: element
+                    .image
+                    .as_ref()
+                    .and_then(|x| x.value.as_ref())
+                    .and_then(|x| Url::parse(x).ok())
+                    .and_then(|url| {
+                        url.path_segments()
+                            .and_then(|x| x.last())
+                            .map(|x| x.to_string())
+                    })
+                    .map(|file_url_name| {
+                        format!("https://commons.wikimedia.org/wiki/File:{file_url_name}")
+                    }),
                 source_url: Some(item_url),
                 is_in_exhibit: element
                     .isInExhibit
