@@ -20,8 +20,16 @@
         <script src="/static/leaflet/L.Control.Sidebar.js"></script>
 
         <style>
+            html,
+            body {
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+
             #map {
-                height: 90vh;
+                height: 100%;
+                width: 100%;
             }
 
             .embed-image {
@@ -32,12 +40,23 @@
     </head>
 
     <body>
-        <p>TODO: write some things here...</p>
-
-        <div id="status">status: JavaScript has not yet started</div>
-
         <div id="map">
+            <div id="noscript">
+                <p>
+                    <b>
+                        This site rely on Javascript being executed. It seems
+                        leaflet failed to load. This project is open-source
+                        under the MIT license,
+                        <a href="https://github.com/marius851000/depiction-map"
+                            >see here</a
+                        >
+                        for the sources.
+                    </b>
+                </p>
+            </div>
             <div id="sidebar">
+                <div id="status">status: JavaScript has not yet started</div>
+
                 <h1>Settings</h1>
                 <!-- TODO: reset button -->
                 <div>
@@ -64,6 +83,111 @@
                         >(contrib) only show place with no images</label
                     >
                 </div>
+
+                <h1>About</h1>
+                <p>
+                    Welcome to the dragon depiction map. This site combine
+                    information from OpenStreetMap and Wikidata about where you
+                    can find things depicting dragons across the world.
+                </p>
+                <p>
+                    This is an open-source software.
+                    <a href="https://github.com/marius851000/depiction-map"
+                        >See sources</a
+                    >
+                </p>
+
+                <h1>Contribute</h1>
+                <p>
+                    Data is refreshed every three hours for now. Your changes
+                    may take a while to appear.
+                </p>
+                <p>
+                    In case the data is correct on those website, but are badly
+                    adapted for this site, I can add overrides for some values.
+                    E-mail me at dragon@mariusdavid.fr. You can also send image
+                    of the work which does not fit the accepted license on those
+                    sites. I’ll add them here (with credit to the image author).
+                </p>
+
+                <h2>OpenStreetMap</h2>
+                <p>
+                    You need to use the <code>artwork_subject</code> key with a
+                    value containing “dragon” (case-insensitive). Note that code
+                    for now remove any result that contain “dragonfl” to remove
+                    things depicting dragonflies.
+                </p>
+                <p>
+                    More possible keys may be found on
+                    <a
+                        href="https://wiki.openstreetmap.org/wiki/Tag:tourism%3Dartwork"
+                        >the wiki</a
+                    >. Note that <code>subject:wikidata</code> is currently
+                    ignored.
+                </p>
+
+                <h2>Wikidata</h2>
+                <p>
+                    For an item to appear on this map, it need to fullfill those
+                    two conditions:
+                </p>
+                <ul>
+                    <li>
+                        Some form of geographical information
+                        <ul>
+                            <li>Either some coordinate (P625)</li>
+                            <li>
+                                or a place (P276) which have coordinate (or is a
+                                part of a place which have coordinate)
+                            </li>
+                        </ul>
+                    </li>
+                    <li>
+                        It needs to depict (P180) a dragon (Q7559) (or dragon in
+                        fictional work, Q30170627) or one of its subclass/an
+                        object that have a nature of dragon
+                    </li>
+                </ul>
+
+                <h1>Credits and license info</h1>
+                <ul>
+                    <li>
+                        <a href="https://leafletjs.com/">Leaflet</a> by
+                        Volodymyr Agafonkin, CloudMade and others under the BSD
+                        2 clause licence
+                    </li>
+                    <li>
+                        <a href="https://github.com/brunob/leaflet.fullscreen"
+                            >leaflet.fullscreen</a
+                        >
+                        by Bruno Bergot and others under the MIT
+                    </li>
+                    <li>
+                        <a
+                            href="https://github.com/Leaflet/Leaflet.markercluster"
+                            >Leaflet.markercluster</a
+                        >
+                        by Dave Leaver and others under the MIT license
+                    </li>
+                    <li>
+                        <a href="https://github.com/Turbo87/leaflet-sidebar"
+                            >leaflet-sidebar</a
+                        >
+                        by Turbo87 and others under the MIT license
+                    </li>
+                    <li>
+                        <a href="https://www.openstreetmap.org"
+                            >OpenStreetMap</a
+                        >
+                        under the Open Database License (ODbL) (both as a data
+                        source and map background)
+                    </li>
+                    <li>
+                        <a href="https://www.wikidata.org">Wikidata</a>
+                        under the Creative Commons CC0 License (as a data
+                        source)
+                    </li>
+                </ul>
             </div>
         </div>
 

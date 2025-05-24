@@ -169,3 +169,5 @@ xhr.setRequestHeader("Accept", "application/json");
 xhr.send();
 
 sidebar.show();
+
+document.getElementById("noscript").remove();
