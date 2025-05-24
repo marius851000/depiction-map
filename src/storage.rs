@@ -49,7 +49,7 @@ impl Storage {
             })?;
         let storage_private_file = extra
             .save_storage_dir
-            .safe_join(format!("{}.private", storage_file_name))
+            .safe_join(format!("{storage_file_name}.private"))
             .with_context(|| {
                 format!(
                     "Error joining directory {:?} and file name {:?}",
@@ -111,7 +111,7 @@ impl Storage {
         match self.load_private() {
             Ok(_) => (),
             Err(err) => {
-                warn!("Failed to load private storage: {:?}", err);
+                warn!("Failed to load private storage: {err:?}");
                 self.data.private = StoredDataPrivate::default();
             }
         };
@@ -121,7 +121,7 @@ impl Storage {
     pub fn save(&mut self) -> anyhow::Result<()> {
         if let Some(parent) = self.storage_public_file.parent() {
             create_dir_all(parent)
-                .with_context(|| format!("Could not create dir at {:?}", parent))?;
+                .with_context(|| format!("Could not create dir at {parent:?}"))?;
         }
 
         let mut temp_path: PathBuf = self.storage_public_file.clone();

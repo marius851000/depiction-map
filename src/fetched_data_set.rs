@@ -87,17 +87,17 @@ impl FetchedDataSet {
             Ok(repo) => repo,
             Err(err) => {
                 if err.code() == git2::ErrorCode::NotFound {
-                    info!("Creating new storage repo in {:?}", default_storage_dir);
+                    info!("Creating new storage repo in {default_storage_dir:?}");
                     Repository::init_opts(
                         &default_storage_dir,
                         RepositoryInitOptions::new().no_reinit(true),
                     )
                     .with_context(|| {
-                        format!("Creating new storage repo in {:?}", default_storage_dir)
+                        format!("Creating new storage repo in {default_storage_dir:?}")
                     })?
                 } else {
                     return Err(Into::<anyhow::Error>::into(err)).with_context(|| {
-                        format!("Opening storage repo in {:?}", default_storage_dir)
+                        format!("Opening storage repo in {default_storage_dir:?}")
                     });
                 }
             }
@@ -106,9 +106,9 @@ impl FetchedDataSet {
         let gitignore_path = default_storage_dir.join(".gitignore");
         if !gitignore_path.exists() {
             let mut f = File::create(&gitignore_path)
-                .with_context(|| format!("Creating .gitignore in {:?}", default_storage_dir))?;
+                .with_context(|| format!("Creating .gitignore in {default_storage_dir:?}"))?;
             writeln!(f, "*.private\n")
-                .with_context(|| format!("Writing .gitignore in {:?}", default_storage_dir))?;
+                .with_context(|| format!("Writing .gitignore in {default_storage_dir:?}"))?;
             make_commit(&repo, &PathBuf::from(".gitignore"), "Add .gitignore")?;
         }
 
@@ -132,8 +132,7 @@ impl FetchedDataSet {
         match storage.load() {
             Ok(_) => (),
             Err(err) => warn!(
-                "Failed to load some storage at {}: {:?}",
-                storage_file_name, err
+                "Failed to load some storage at {storage_file_name}: {err:?}"
             ),
         };
 

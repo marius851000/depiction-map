@@ -126,7 +126,7 @@ impl FetchData for FetchDataWikidataSparql {
             .get(url_to_query.clone())
             .header("Accept", "application/sparql-results+json")
             .send()
-            .with_context(|| format!("Performing the wikidata get query to {}", url_to_query))?;
+            .with_context(|| format!("Performing the wikidata get query to {url_to_query}"))?;
         if !response.status().is_success() {
             bail!(
                 "Wikidata request failed with status code {}, the response being {} and the url being {}",
@@ -138,9 +138,9 @@ impl FetchData for FetchDataWikidataSparql {
 
         let text = response
             .text()
-            .with_context(|| format!("Could not decode encoding of {}", url_to_query))?;
+            .with_context(|| format!("Could not decode encoding of {url_to_query}"))?;
         let parsed: WikidataDocument = serde_json::de::from_str(&text)
-            .with_context(|| format!("Could not parse answer from {}", url_to_query))?;
+            .with_context(|| format!("Could not parse answer from {url_to_query}"))?;
         let elements = parsed.get_elements();
 
         let mut results = BTreeSet::new();

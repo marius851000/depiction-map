@@ -47,8 +47,7 @@ impl DepictAppData {
                         Ok(t) => t,
                         Err(err) => {
                             panic!(
-                                "Something seriously wrong happened getting the current (TAI) time ({:?}). The update thread will be destroyed.",
-                                err
+                                "Something seriously wrong happened getting the current (TAI) time ({err:?}). The update thread will be destroyed."
                             )
                         }
                     };
@@ -79,8 +78,6 @@ impl DepictAppData {
                 }
                 sleep(Duration::from_secs(10));
             }
-        });
-
-        spawned
+        })
     }
 }
