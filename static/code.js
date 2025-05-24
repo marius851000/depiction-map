@@ -127,10 +127,18 @@ function refresh_map() {
 
         if (imageURL != null) {
             popupHTML += "<img src=\"" + escapeHtml(imageURL) + "\" class=\"embed-image\"/><br />";
+            imageSourceText = entry["image_source_text"]
+            
             if (imageSourceURL != null) {
-                popupHTML += "<p><a href=\"" + escapeHtml(imageSourceURL) + "\">image source</a></p>";
+              if (imageSourceText == null) {
+                imageSourceText = "image source"
+              }
+              popupHTML += "<p><a href=\"" + escapeHtml(imageSourceURL) + "\">" + escapeHtml(imageSourceText) + "</a></p>";
             } else {
-                popupHTML += "<p>image source somehow unknown .</p>";
+              if (imageSourceText == null) {
+                imageSourceText = "image source somehow unknwown."
+              }
+              popupHTML += "<p>" + escapeHtml(imageSourceText) + "</p>";
             }
         } else {
             popupHTML += "<p><i>No image</i></p><br />"

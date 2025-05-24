@@ -176,6 +176,7 @@ impl FetchData for FetchDataWikidataSparql {
                     .map(|file_url_name| {
                         format!("https://commons.wikimedia.org/wiki/File:{file_url_name}")
                     }),
+                image_source_text: Some("from Wikimedia Commons".to_string()),
                 source_url: Some(item_url),
                 is_in_exhibit: element
                     .isInExhibit

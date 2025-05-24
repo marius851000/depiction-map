@@ -10,6 +10,7 @@ pub struct MapEntry {
     pub location_name: Option<String>,
     pub image: Option<String>,
     pub image_source_url: Option<String>,
+    pub image_source_text: Option<String>,
     pub source_url: Option<String>,
     pub is_in_exhibit: bool,
     pub nature: Option<String>,
