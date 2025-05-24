@@ -8,6 +8,7 @@ use crate::{ElementId, MapEntry};
 pub struct OverrideEntry {
     pub local_image: Option<String>,
     pub image_source_url: Option<String>,
+    pub image_source_text: Option<String>,
 }
 
 impl OverrideEntry {
@@ -18,6 +19,10 @@ impl OverrideEntry {
 
         if let Some(image_source_url) = &self.image_source_url {
             map_entry.image_source_url = Some(image_source_url.clone());
+        }
+
+        if let Some(image_source_text) = &self.image_source_text {
+            map_entry.image_source_text = Some(image_source_text.clone());
         }
     }
 }
