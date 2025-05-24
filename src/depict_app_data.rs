@@ -1,7 +1,7 @@
 use std::{
     path::PathBuf,
     sync::Arc,
-    thread::{self, sleep},
+    thread::{self, JoinHandle, sleep},
     time::Duration,
 };
 
@@ -35,9 +35,10 @@ impl DepictAppData {
     }
 
     /// Will panic if called more than once
-    pub fn start_update_thread(&mut self, mut fetched_data_set: FetchedDataSet) {
+    pub fn start_update_thread(&mut self, mut fetched_data_set: FetchedDataSet) -> JoinHandle<()> {
         let display_data_set = self.display_data_set.clone();
-        //TODO: monitor thread
+        
+
         thread::spawn(move || {
             info!("Update thread spawned");
             loop {
@@ -79,5 +80,7 @@ impl DepictAppData {
                 sleep(Duration::from_secs(10));
             }
         });
+
+        spawned
     }
 }

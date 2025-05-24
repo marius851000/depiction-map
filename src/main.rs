@@ -1,4 +1,10 @@
-use std::{fs::File, path::PathBuf};
+use std::{
+    fs::File,
+    path::PathBuf,
+    process::exit,
+    thread::{sleep, spawn},
+    time::Duration,
+};
 
 use actix_files::Files;
 use actix_web::{
@@ -13,7 +19,7 @@ use depiction_map::{
     FetchedDataSet, MapEntry, Overrides,
 };
 use env_logger::Env;
-use log::info;
+use log::{error, info};
 use mime_guess::from_path;
 use rust_embed::Embed;
 
@@ -102,7 +108,14 @@ async fn main() {
         ).unwrap();
 
         let mut app_data = DepictAppData::new(&fetched_data_set, opts.ressource_path.clone());
-        app_data.start_update_thread(fetched_data_set);
+        let handle = app_data.start_update_thread(fetched_data_set);
+        spawn(move || loop {
+            sleep(Duration::from_secs(2));
+            if handle.is_finished() {
+                error!("Background update thread finished while it should never stop. Exiting.");
+                exit(200);
+            }
+        });
         Data::new(app_data)
     }).await.unwrap();
 
