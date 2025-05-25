@@ -1,3 +1,4 @@
+use log::error;
 use std::{
     path::PathBuf,
     sync::Arc,
@@ -5,11 +6,12 @@ use std::{
     time::Duration,
 };
 
+use anyhow::Context;
 use arc_swap::ArcSwap;
 use log::{info, warn};
 use tai_time::TaiTime;
 
-use crate::{DisplayDataSet, FetchedDataSet};
+use crate::{DisplayDataSet, DisplayDataSetEntry, FetchedDataSet};
 
 pub struct DepictAppData {
     pub display_data_set: Arc<DisplayDataSet>,
@@ -17,27 +19,30 @@ pub struct DepictAppData {
 }
 
 impl DepictAppData {
-    pub fn new(fetched_data_set: &FetchedDataSet, ressource_path: PathBuf) -> Self {
+    pub fn new(fetched_data_set: &FetchedDataSet, ressource_path: PathBuf) -> anyhow::Result<Self> {
         let mut display_data_set =
             DisplayDataSet::new(&fetched_data_set.list_all_depiction_category());
 
         for depiction in fetched_data_set.list_all_depiction_category().clone() {
-            let built = fetched_data_set.build_data_for_depiction_category(depiction.clone());
-            display_data_set
-                .to_display
-                .insert(depiction.clone(), ArcSwap::from_pointee(built));
+            let entries = fetched_data_set.build_data_for_depiction_category(depiction.clone());
+            display_data_set.to_display.insert(
+                depiction.clone(),
+                ArcSwap::from_pointee(
+                    DisplayDataSetEntry::new(entries)
+                        .context("Storing the result in DisplayDataSetEntry")?,
+                ),
+            );
         }
 
-        Self {
+        Ok(Self {
             display_data_set: Arc::new(display_data_set),
             ressource_path,
-        }
+        })
     }
 
     /// Will panic if called more than once
     pub fn start_update_thread(&mut self, mut fetched_data_set: FetchedDataSet) -> JoinHandle<()> {
         let display_data_set = self.display_data_set.clone();
-        
 
         thread::spawn(move || {
             info!("Update thread spawned");
@@ -60,7 +65,15 @@ impl DepictAppData {
                                     .build_data_for_depiction_category(depiction.clone());
                                 let display_entry =
                                     display_data_set.to_display.get(depiction).unwrap(); // All possible value should be set in the constructor (althought a bad implementation could lead to a panic here)
-                                display_entry.swap(Arc::new(map_entries));
+                                match DisplayDataSetEntry::new(map_entries) {
+                                    Ok(entry) => display_entry.swap(Arc::new(entry)),
+                                    Err(err) => {
+                                        error!(
+                                            "Failed to create the struct used to share the data with the other threads: {err:#}"
+                                        );
+                                        continue;
+                                    }
+                                };
                                 info!(
                                     "Update successfull for {:?}",
                                     fetched_data_set.entries[entry_pos].fetcher.title()

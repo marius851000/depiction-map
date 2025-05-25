@@ -170,7 +170,7 @@ impl FetchData for FetchDataWikidataSparql {
                     .and_then(|x| Url::parse(x).ok())
                     .and_then(|url| {
                         url.path_segments()
-                            .and_then(|x| x.last())
+                            .and_then(|mut x| x.next_back())
                             .map(|x| x.to_string())
                     })
                     .map(|file_url_name| {

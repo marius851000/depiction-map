@@ -18,7 +18,7 @@ mod fetched_data_set;
 pub use fetched_data_set::FetchedDataSet;
 
 mod display_data_set;
-pub use display_data_set::DisplayDataSet;
+pub use display_data_set::{DisplayDataSet, DisplayDataSetEntry};
 
 mod depict_app_data;
 pub use depict_app_data::DepictAppData;

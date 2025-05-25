@@ -9,14 +9,14 @@ use std::{
 use actix_files::Files;
 use actix_web::{
     App, Either, HttpResponse, HttpServer, Responder, get,
-    http::StatusCode,
+    http::{StatusCode, header::ContentType},
     rt::task::spawn_blocking,
-    web::{self, Data, Json},
+    web::{self, Data},
 };
 use clap::Parser;
 use depiction_map::{
     DepictAppData, DepictionCategory, FetchDataOpenStreetMap, FetchDataWikidataSparql,
-    FetchedDataSet, MapEntry, Overrides,
+    FetchedDataSet, Overrides,
 };
 use env_logger::Env;
 use log::{error, info};
@@ -51,13 +51,16 @@ async fn static_ressources(path: web::Path<String>) -> impl Responder {
 async fn get_depiction(
     category: web::Path<String>,
     data: Data<DepictAppData>,
-) -> Either<Json<Vec<MapEntry>>, (&'static str, StatusCode)> {
+) -> Either<HttpResponse, (&'static str, StatusCode)> {
     let category = DepictionCategory(category.into_inner());
-    let result = match data.display_data_set.to_display.get(&category) {
-        Some(value) => value,
-        None => return Either::Right(("category does not exist", StatusCode::NOT_FOUND)),
-    };
-    Either::Left(web::Json(result.load().as_ref().clone()))
+    match data.display_data_set.to_display.get(&category) {
+        Some(display_entry) => Either::Left(
+            HttpResponse::Ok()
+                .content_type(ContentType::json())
+                .body(display_entry.load().json.clone()),
+        ),
+        None => Either::Right(("category does not exist", StatusCode::NOT_FOUND)),
+    }
 }
 
 #[derive(Parser, Debug)]
@@ -107,7 +110,7 @@ async fn main() {
             "wikidata_dragon.json".into(),
         ).unwrap();
 
-        let mut app_data = DepictAppData::new(&fetched_data_set, opts.ressource_path.clone());
+        let mut app_data = DepictAppData::new(&fetched_data_set, opts.ressource_path.clone()).unwrap();
         let handle = app_data.start_update_thread(fetched_data_set);
         spawn(move || loop {
             sleep(Duration::from_secs(2));

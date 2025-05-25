@@ -131,9 +131,7 @@ impl FetchedDataSet {
         let mut storage = Storage::new(storage_file_name.clone(), self.extra.clone())?;
         match storage.load() {
             Ok(_) => (),
-            Err(err) => warn!(
-                "Failed to load some storage at {storage_file_name}: {err:?}"
-            ),
+            Err(err) => warn!("Failed to load some storage at {storage_file_name}: {err:?}"),
         };
 
         self.entries.push(FetchedDataEntry {
