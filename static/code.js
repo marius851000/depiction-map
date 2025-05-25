@@ -17,7 +17,7 @@ updateStatus("Loading web page");
 let map = L.map("map", {
   fullscreenControl: true,
   fullscreenControlOptions: {
-    position: "topleft",
+    position: "topright",
   },
 }).setView([12.9, 15.3], 3);
 
@@ -29,10 +29,9 @@ L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
 
 var sidebar = L.control.sidebar("sidebar", {
   position: "right",
-  closeButton: false, //TODO: would be nice to close (and re-open) this
+  closeButton: true,
   autoPan: false,
 });
-
 map.addControl(sidebar);
 
 let xhr = new XMLHttpRequest();
@@ -170,5 +169,22 @@ xhr.setRequestHeader("Accept", "application/json");
 xhr.send();
 
 sidebar.show();
+
+function invert_side_bar() {
+  sidebar.toggle();
+}
+
+let closeBarButton = document.createElement("a");
+closeBarButton.setAttribute("href", "#");
+closeBarButton.setAttribute("role", "button");
+closeBarButton.setAttribute("title", "Info and settings");
+closeBarButton.setAttribute("aria-label", "Info and settings");
+closeBarButton.setAttribute("aria-disabled", "false");
+closeBarButton.setAttribute("onclick", "invert_side_bar()");
+closeBarButton.text = "info";
+
+document
+  .getElementsByClassName("leaflet-control-zoom")[0]
+  .appendChild(closeBarButton);
 
 document.getElementById("noscript").remove();
