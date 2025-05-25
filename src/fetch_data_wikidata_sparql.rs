@@ -158,25 +158,30 @@ impl FetchData for FetchDataWikidataSparql {
                 Some(value) => value.to_string(),
                 None => bail!("Could not extra the qid from a (most-likely empty) wikidata URL"),
             };
+
+            let image_source_url = element
+                .image
+                .as_ref()
+                .and_then(|x| x.value.as_ref())
+                .and_then(|x| Url::parse(x).ok())
+                .and_then(|url| {
+                    url.path_segments()
+                        .and_then(|mut x| x.next_back())
+                        .map(|x| x.to_string())
+                })
+                .map(|file_url_name| {
+                    format!("https://commons.wikimedia.org/wiki/File:{file_url_name}")
+                });
+
             results.insert(MapEntry {
                 pos: coord,
                 name: element.itemLabel.as_ref().and_then(|x| x.value.clone()),
                 location_name: element.placeLabel.as_ref().and_then(|x| x.value.clone()),
                 image: element.image.as_ref().and_then(|x| x.value.clone()),
-                image_source_url: element
-                    .image
+                image_source_text: image_source_url
                     .as_ref()
-                    .and_then(|x| x.value.as_ref())
-                    .and_then(|x| Url::parse(x).ok())
-                    .and_then(|url| {
-                        url.path_segments()
-                            .and_then(|mut x| x.next_back())
-                            .map(|x| x.to_string())
-                    })
-                    .map(|file_url_name| {
-                        format!("https://commons.wikimedia.org/wiki/File:{file_url_name}")
-                    }),
-                image_source_text: Some("from Wikimedia Commons".to_string()),
+                    .map(|_| "from Wikimedia Commons".to_string()),
+                image_source_url,
                 source_url: Some(item_url),
                 is_in_exhibit: element
                     .isInExhibit

@@ -161,6 +161,7 @@ impl FetchedDataSet {
                             override_entry.override_map_entry(&mut map_entry);
                         }
                     }
+                    map_entry.post_process();
                     result.push(map_entry);
                 }
             }
