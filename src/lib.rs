@@ -47,4 +47,4 @@ impl DepictionCategory {
     }
 }
 
-pub const USER_AGENT: &str = "DepictionMapBot (developed by marius@mariusdavid.fr)";
+pub const USER_AGENT: &str = "DepictionMapBot (github.com/marius851000/depiction-map)";
