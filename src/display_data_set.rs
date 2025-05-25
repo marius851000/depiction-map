@@ -1,20 +1,22 @@
 use std::collections::{HashMap, HashSet};
 
 use arc_swap::ArcSwap;
+use actix_web::web::Bytes;
 
 use crate::{DepictionCategory, MapEntry};
 
 pub struct DisplayDataSetEntry {
     pub entries: Vec<MapEntry>,
-    pub json: String,
+    pub json: Bytes,
 }
 
 impl DisplayDataSetEntry {
     pub fn new(entries: Vec<MapEntry>) -> anyhow::Result<Self> {
         let json_string = serde_json::to_string(&entries)?;
+        let json_bytes = Bytes::from(json_string);
         Ok(Self {
             entries,
-            json: json_string,
+            json: json_bytes,
         })
     }
 }
@@ -23,7 +25,7 @@ impl Default for DisplayDataSetEntry {
     fn default() -> Self {
         Self {
             entries: Vec::new(),
-            json: "[]".to_string(),
+            json: Bytes::from_static(b"[]"),
         }
     }
 }
