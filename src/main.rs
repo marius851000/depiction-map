@@ -67,9 +67,9 @@ async fn get_depiction(
 pub struct Opts {
     ressource_path: PathBuf,
     save_path: PathBuf,
-    #[arg(default_value = "8080")]
+    #[arg(long, default_value = "8080")]
     port: u16,
-    #[arg(default_value = "127.0.0.1")]
+    #[arg(long, default_value = "127.0.0.1")]
     host: String,
 }
 
