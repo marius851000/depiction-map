@@ -1,5 +1,5 @@
 mod map_entry;
-pub use map_entry::MapEntry;
+pub use map_entry::{MapEntry, MapEntryImageSource};
 
 mod storage;
 use serde::{Deserialize, Serialize};

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{ElementId, MapEntry};
+use crate::{ElementId, MapEntry, MapEntryImageSource};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct OverrideEntry {
@@ -14,15 +14,21 @@ pub struct OverrideEntry {
 impl OverrideEntry {
     pub fn override_map_entry(&self, map_entry: &mut MapEntry) {
         if let Some(local_image) = &self.local_image {
-            map_entry.image = Some(format!("/images/{}", local_image.clone())); // client will escape HTML
+            map_entry.image = Some(MapEntryImageSource {
+                url: format!("/images/{}", local_image.clone()),
+                credit_url: None,
+                credit_text: None,
+            })
         }
 
-        if let Some(image_source_url) = &self.image_source_url {
-            map_entry.image_source_url = Some(image_source_url.clone());
-        }
+        if let Some(image) = &mut map_entry.image {
+            if let Some(image_source_url) = &self.image_source_url {
+                image.credit_url = Some(image_source_url.clone());
+            }
 
-        if let Some(image_source_text) = &self.image_source_text {
-            map_entry.image_source_text = Some(image_source_text.clone());
+            if let Some(image_source_text) = &self.image_source_text {
+                image.credit_text = Some(image_source_text.clone());
+            }
         }
     }
 }

@@ -6,7 +6,7 @@ use reqwest::blocking::Client;
 use serde::Deserialize;
 use url::Url;
 
-use crate::{ElementId, FetchData, MapEntry, USER_AGENT};
+use crate::{ElementId, FetchData, MapEntry, MapEntryImageSource, USER_AGENT};
 
 fn parse_point(value: &str) -> Option<(f64, f64)> {
     let second_part = value.split("Point(").nth(1)?;
@@ -159,7 +159,7 @@ impl FetchData for FetchDataWikidataSparql {
                 None => bail!("Could not extra the qid from a (most-likely empty) wikidata URL"),
             };
 
-            let image_source_url = element
+            let image_credit_url = element
                 .image
                 .as_ref()
                 .and_then(|x| x.value.as_ref())
@@ -177,11 +177,15 @@ impl FetchData for FetchDataWikidataSparql {
                 pos: coord,
                 name: element.itemLabel.as_ref().and_then(|x| x.value.clone()),
                 location_name: element.placeLabel.as_ref().and_then(|x| x.value.clone()),
-                image: element.image.as_ref().and_then(|x| x.value.clone()),
-                image_source_text: image_source_url
+                image: element
+                    .image
                     .as_ref()
-                    .map(|_| "from Wikimedia Commons".to_string()),
-                image_source_url,
+                    .and_then(|x| x.value.as_ref())
+                    .map(|image_url| MapEntryImageSource {
+                        url: image_url.into(),
+                        credit_text: Some("From Wikimedia Commons".into()),
+                        credit_url: image_credit_url,
+                    }),
                 source_url: Some(item_url),
                 is_in_exhibit: element
                     .isInExhibit

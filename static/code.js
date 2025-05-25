@@ -121,21 +121,22 @@ function refresh_map() {
     }
 
     // image
-    imageURL = entry["image"]; //TODO: (more server-side) some images are TIF that doesn’t display in browser
-    imageSourceURL = entry["image_source_url"];
+    //TODO: (more server-side) some images are TIF that doesn’t display in browser
+    if (entry["image"] != null) {
+      imageURL = entry["image"]["url"];
+      imageCreditUrl = entry["image"]["credit_url"];
 
-    if (imageURL != null) {
       popupHTML +=
         '<img src="' + escapeHtml(imageURL) + '" class="embed-image"/><br />';
-      imageSourceText = entry["image_source_text"];
+      imageSourceText = entry["image"]["credit_text"];
 
-      if (imageSourceURL != null) {
+      if (imageCreditUrl != null) {
         if (imageSourceText == null) {
           imageSourceText = "image source";
         }
         popupHTML +=
           '<p><a href="' +
-          escapeHtml(imageSourceURL) +
+          escapeHtml(imageCreditUrl) +
           '">' +
           escapeHtml(imageSourceText) +
           "</a></p>";

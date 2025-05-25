@@ -61,8 +61,6 @@ impl FetchData for FetchDataOpenStreetMap {
                     location_name: None,
                     name: tag.get("name").map(|x| x.to_string()),
                     source_url: Some(format!("https://www.openstreetmap.org/node/{osm_id}")),
-                    image_source_url: None,
-                    image_source_text: None,
                     is_in_exhibit: false,
                     nature: guess_nature_from_tags(&tag),
                     element_ids: vec![ElementId::Osm(osm_id)],
