@@ -1,7 +1,7 @@
 use std::collections::{HashMap, HashSet};
 
-use arc_swap::ArcSwap;
 use actix_web::web::Bytes;
+use arc_swap::ArcSwap;
 
 use crate::{DepictionCategory, MapEntry};
 
