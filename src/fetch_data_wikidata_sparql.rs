@@ -183,10 +183,11 @@ impl FetchData for FetchDataWikidataSparql {
                     .and_then(|x| x.value.as_ref())
                     .map(|image_url| MapEntryImageSource {
                         url: image_url.into(),
-                        credit_text: Some("From Wikimedia Commons".into()),
+                        credit_text: Some("Image from Wikimedia Commons".into()),
                         credit_url: image_credit_url,
                     }),
                 source_url: Some(item_url),
+                source_text: "From Wikidata".into(),
                 is_in_exhibit: element
                     .isInExhibit
                     .as_ref()

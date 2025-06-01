@@ -151,7 +151,11 @@ function refresh_map() {
 
     // link
     popupHTML +=
-      '<a href="' + escapeHtml(entry["source_url"]) + '">Data source</a>';
+      '<a href="' +
+      escapeHtml(entry["source_url"]) +
+      '">' +
+      escapeHtml(entry["source_text"]) +
+      "</a>";
 
     let marker = L.marker(entry["pos"], {}).bindPopup(popupHTML, {
       maxWidth: "auto",

@@ -19,6 +19,7 @@ pub struct MapEntry {
     pub location_name: Option<String>,
     pub image: Option<MapEntryImageSource>,
     pub source_url: Option<String>,
+    pub source_text: String,
     pub is_in_exhibit: bool,
     pub nature: Option<String>,
     pub element_ids: Vec<ElementId>,
@@ -33,7 +34,7 @@ impl MapEntry {
                     match Url::parse(credit_url) {
                         Ok(url) => {
                             if let Some(domain) = url.domain() {
-                                image.credit_text = Some(format!("From {}", domain));
+                                image.credit_text = Some(format!("Image from {}", domain));
                             } else {
                                 warn!("Failed to get the url of an image source \"{}\"", image.url)
                             }
